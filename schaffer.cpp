@@ -1,4 +1,5 @@
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <vector>
 #include <random>
@@ -110,7 +111,19 @@ void mutacao(Point& p) {
 
 int main (int argc, char *argv[]) {
   int maxPoints = 10, maxGen = 300;
+  switch (argc) {
+      case 2: maxPoints = atoi(argv[1]);
+          break;
+      case 3: {
+          maxPoints = atoi(argv[1]);
+          maxGen = atoi(argv[2]);
+          break;
+      }
+      default: cerr << "Utilizando População de tamanho 10 e 300 gerações" << endl;
+          break;
+  }
 
+  
   vector<vector <Point>> generations;
 
   //Criação população inicial
@@ -171,14 +184,13 @@ int main (int argc, char *argv[]) {
   }
   
   //Mandando os dados para saída em forma de texto
-  for (int i = 0; i < 300; i++) {
-    cout << "\n<------Geração " << i+1 << "------>\n\n"<< generations[i] << endl << "Média: "<< fitness_avg[i] << endl << "Melhor ("<< schaffer(best[i])<< "): " << best[i] << endl << "Pior ("<< schaffer(worst[i])<<"): " << worst[i] << endl;
+  for (int i = 0; i < maxGen; i++) {
+    cout << "\n<------Geração " << i+1 << "------>\n\n"<< generations[i] << endl
+    << "Média: "<< fitness_avg[i] << endl
+    << "Melhor ("<< schaffer(best[i])<< "): " << best[i] << endl
+    << "Pior ("<< schaffer(worst[i])<<"): " << worst[i] << endl;
   }
 
 
   return 0;
 }
-
-
-
-
