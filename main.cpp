@@ -5,7 +5,7 @@
 using namespace std;
 
 int main (int argc, char *argv[]) {
-  int maxPoints = 10, maxGen = 300;
+  int maxPoints = 50, maxGen = 300;
   switch (argc) {
       case 2: maxPoints = atoi(argv[1]);
           break;
@@ -18,8 +18,14 @@ int main (int argc, char *argv[]) {
           break;
   }
 
-  Point result = simulaSchaffer(maxGen, maxPoints);
-  cout << "\nMelhor" << result << endl;
+  int contadorConvergiu = 0;
+  for(int i = 0; i < 100; i++){
+      Point result = simulaSchaffer(maxGen,maxPoints);
+      if(abs(result.x) <= 0.09 && abs(result.y) <= 0.09)
+          contadorConvergiu++;
+  }
+
+  cerr << "Total de vezes que convergiu em 100 execuções: " << contadorConvergiu << endl;
   
   return 0;
 }
