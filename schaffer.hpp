@@ -109,88 +109,73 @@ void mutacao(Point& p) {
     p.y = std::clamp(p.y, -10.0, 10.0);
 }
 
-int main (int argc, char *argv[]) {
-  int maxPoints = 10, maxGen = 300;
-  switch (argc) {
-      case 2: maxPoints = atoi(argv[1]);
-          break;
-      case 3: {
-          maxPoints = atoi(argv[1]);
-          maxGen = atoi(argv[2]);
-          break;
+Point simulaSchaffer(int maxGen , int maxPoints){
+    vector<vector <Point>> generations;
+  
+    //Criação população inicial
+    vector<Point> initialGeneration;
+    for (int i = 0; i < maxPoints; i++) {
+      initialGeneration.push_back(newRandomPoint());
+    }
+  
+    //Criando os dados do fitness a serem avaliados (Melhor, Pior e Médio)
+    vector<Point> best;
+    vector<Point> worst;
+    vector<double> fitness_avg;
+    
+    //Variável que guardará a geração no loop for
+    vector<Point> currentGen = initialGeneration;
+    
+    for(int gen = 1; gen <= maxGen; gen++){
+  
+      //Ordena a geração pelo fitness
+      std::sort(currentGen.begin(), currentGen.end(), [](const Point& a, const Point& b) {
+            return schaffer(a) > schaffer(b);
+      });
+  
+      //Adiciona a geração ao vetor global de gerações
+      generations.push_back(currentGen);
+  
+      best.push_back(currentGen.front());
+      worst.push_back(currentGen.back());
+      fitness_avg.push_back(avg(currentGen));
+  
+      //cout << best.front() << "," << worst.back() << "," << avg(currentGen) << endl;
+  
+      //Gerando a nova geração
+      vector<Point> nextGen;
+  
+      //Elitismo: Adicionamos os 2 melhores a próxima geração
+      nextGen.push_back(currentGen[0]);
+      nextGen.push_back(currentGen[1]);
+  
+      //Seleção por torneio, cruzamento e mutação para os 48 restantes
+      while (nextGen.size() < maxPoints) {
+          // Torneio
+          Point pai1 = torneio(currentGen);
+          Point pai2 = torneio(currentGen);
+  
+          // Recombinação
+          Point filho = cruzamento(pai1, pai2);
+  
+          // Mutação
+          mutacao(filho);
+  
+          nextGen.push_back(filho);
       }
-      default: cerr << "Utilizando População de tamanho 10 e 300 gerações" << endl;
-          break;
-  }
-
   
-  vector<vector <Point>> generations;
-
-  //Criação população inicial
-  vector<Point> initialGeneration;
-  for (int i = 0; i < maxPoints; i++) {
-    initialGeneration.push_back(newRandomPoint());
-  }
-
-  //Criando os dados do fitness a serem avaliados (Melhor, Pior e Médio)
-  vector<Point> best;
-  vector<Point> worst;
-  vector<double> fitness_avg;
-  
-  //Variável que guardará a geração no loop for
-  vector<Point> currentGen = initialGeneration;
-  
-  for(int gen = 1; gen <= maxGen; gen++){
-
-    //Ordena a geração pelo fitness
-    std::sort(currentGen.begin(), currentGen.end(), [](const Point& a, const Point& b) {
-          return schaffer(a) > schaffer(b);
-    });
-
-    //Adiciona a geração ao vetor global de gerações
-    generations.push_back(currentGen);
-
-    best.push_back(currentGen.front());
-    worst.push_back(currentGen.back());
-    fitness_avg.push_back(avg(currentGen));
-
-    //cout << best.front() << "," << worst.back() << "," << avg(currentGen) << endl;
-
-    //Gerando a nova geração
-    vector<Point> nextGen;
-
-    //Elitismo: Adicionamos os 2 melhores a próxima geração
-    nextGen.push_back(currentGen[0]);
-    nextGen.push_back(currentGen[1]);
-
-    //Seleção por torneio, cruzamento e mutação para os 48 restantes
-    while (nextGen.size() < maxPoints) {
-        // Torneio
-        Point pai1 = torneio(currentGen);
-        Point pai2 = torneio(currentGen);
-
-        // Recombinação
-        Point filho = cruzamento(pai1, pai2);
-
-        // Mutação
-        mutacao(filho);
-
-        nextGen.push_back(filho);
+      //Nova geração vira a geração atual
+      currentGen = nextGen;
+      
+    }
+    
+    //Mandando os dados para saída em forma de texto
+    for (int i = 0; i < maxGen; i++) {
+      cout << "\n<------Geração " << i+1 << "------>\n\n"<< generations[i] << endl
+      << "Média: "<< fitness_avg[i] << endl
+      << "Melhor ("<< schaffer(best[i])<< "): " << best[i] << endl
+      << "Pior ("<< schaffer(worst[i])<<"): " << worst[i] << endl;
     }
 
-    //Nova geração vira a geração atual
-    currentGen = nextGen;
-    
-  }
-  
-  //Mandando os dados para saída em forma de texto
-  for (int i = 0; i < maxGen; i++) {
-    cout << "\n<------Geração " << i+1 << "------>\n\n"<< generations[i] << endl
-    << "Média: "<< fitness_avg[i] << endl
-    << "Melhor ("<< schaffer(best[i])<< "): " << best[i] << endl
-    << "Pior ("<< schaffer(worst[i])<<"): " << worst[i] << endl;
-  }
-
-
-  return 0;
+    return best[maxGen -1];
 }
