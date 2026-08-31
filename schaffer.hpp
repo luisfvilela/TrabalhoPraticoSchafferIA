@@ -67,7 +67,9 @@ Point torneio(const std::vector<Point>& pop) {
     std::uniform_int_distribution<> dist(0, pop.size() - 1);
     
     Point melhor = pop[dist(gen)];
-    for(int i = 0; i < 2; i++) { // Sorteia mais 2 competidores
+    
+    // Sorteia apenas mais 1 competidor (k=2) em vez de 2
+    for(int i = 0; i < 1; i++) { 
         Point competidor = pop[dist(gen)];
         if(schaffer(competidor) > schaffer(melhor)) {
             melhor = competidor;
@@ -76,35 +78,36 @@ Point torneio(const std::vector<Point>& pop) {
     return melhor;
 }
 
-// 2. Cruzamento Aritmético
+// 2. Cruzamento BLX-0.5 (Blend Crossover)
 Point cruzamento(const Point& pai1, const Point& pai2) {
-    //Gerador de numero Real aleatório de 0 a 1
-    std::uniform_real_distribution<double> dist(0.0, 1.0);
-    double beta = dist(gen);
+    // Permite extrapolação (-0.5 a 1.5) para evitar o encolhimento da população
+    std::uniform_real_distribution<double> dist(-0.5, 1.5);
     
-    // O filho é uma combinação linear dos pais
+    double betaX = dist(gen);
+    double betaY = dist(gen);
+    
     return Point(
-        beta * pai1.x + (1.0 - beta) * pai2.x,
-        beta * pai1.y + (1.0 - beta) * pai2.y
+        betaX * pai1.x + (1.0 - betaX) * pai2.x,
+        betaY * pai1.y + (1.0 - betaY) * pai2.y
     );
 }
 
-// 3. Mutação Gaussiana
+// 3. Mutação Híbrida
 void mutacao(Point& p) {
     std::uniform_real_distribution<double> prob(0.0, 1.0);
-
-    //gera um número aleatório utilizando a função gaussiana (distribuição normal)
-    //com média 0, portanto simétrica e desvio padrão 0.5 (quanto menor mais próximo da média é a média dos valores)
-    std::normal_distribution<double> gauss(0.0, 0.5);
     
-    double taxaMutacao = 0.05; // 5% de chance de mutar cada cromossomo
+    // 75% das mutações serão saltos grandes (para escapar das armadilhas)
+    // 25% serão saltos finos (para acertar a precisão -0.09 a 0.09)
+    bool saltoGrande = prob(gen) < 0.75;
+    std::normal_distribution<double> gauss(0.0, saltoGrande ? 3.0 : 0.3); 
     
-    //prob(gen) gera um número de 0 a 5%, se a taxa de mutação for maior ela não é mutada, se for
-    //menor é mutada
+    // Taxa agressiva de exploração
+    double taxaMutacao = 0.80; 
+    
     if (prob(gen) < taxaMutacao) p.x += gauss(gen);
     if (prob(gen) < taxaMutacao) p.y += gauss(gen);
     
-    //impede que os valores ultrapassem os limites da área de busca 
+    // Trava nos limites
     p.x = std::clamp(p.x, -10.0, 10.0);
     p.y = std::clamp(p.y, -10.0, 10.0);
 }
