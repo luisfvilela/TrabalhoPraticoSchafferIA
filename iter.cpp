@@ -18,7 +18,14 @@ int main (int argc, char *argv[]) {
           break;
   }
 
-  simulaSchaffer(maxGen, maxPoints);
+  int contadorConvergiu = 0;
+  for(int i = 0; i < 100; i++){
+      Point result = simulaSchaffer(maxGen,maxPoints);
+      if(abs(result.x) <= 0.09 && abs(result.y) <= 0.09)
+          contadorConvergiu++;
+  }
+
+  cerr << "Total de vezes que convergiu em 100 execuções: " << contadorConvergiu << endl;
   
   return 0;
 }
