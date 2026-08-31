@@ -80,8 +80,7 @@ Point torneio(const std::vector<Point>& pop) {
 
 // 2. Cruzamento BLX-0.5 (Blend Crossover)
 Point cruzamento(const Point& pai1, const Point& pai2) {
-    // Permite extrapolação (-0.5 a 1.5) para evitar o encolhimento da população
-    std::uniform_real_distribution<double> dist(-0.5, 1.5);
+    std::uniform_real_distribution<double> dist(0, 1);
     
     double betaX = dist(gen);
     double betaY = dist(gen);
